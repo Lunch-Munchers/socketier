@@ -7,6 +7,7 @@
 #include <arpa/inet.h>
 
 #define MAX_BUFFER_SIZE 1024
+#define MAX_CLIENTS 10
 
 int create_server_socket(int port) {
     int server_socket;
@@ -110,12 +111,13 @@ int main(int argc, char *argv[]) {
     int port = atoi(argv[2]);
     const char *ip = (argc == 4) ? argv[3] : "127.0.0.1";
 
-    if (type == 1) { // Sending
+     if (type == 1) { // Sending
         int client_socket = connect_to_server(ip, port);
+        printf("messaging: (send an empty message to exit)\n");
 
         char message[MAX_BUFFER_SIZE];
         while (1) {
-            printf("Enter message (press Enter with an empty text field to exit): ");
+            printf("> ");
             fgets(message, MAX_BUFFER_SIZE, stdin);
 
             // Remove trailing newline
@@ -136,20 +138,66 @@ int main(int argc, char *argv[]) {
         int server_socket = create_server_socket(port);
         printf("Listening on port %d...\n", port);
 
-        int client_socket = accept_client(server_socket);
+        int client_sockets[MAX_CLIENTS];
+        fd_set read_fds;
+        int max_sd, activity;
 
-        char buffer[MAX_BUFFER_SIZE];
+        for (int i = 0; i < MAX_CLIENTS; i++) {
+            client_sockets[i] = 0;
+        }
+
         while (1) {
-            receive_data(client_socket, buffer);
-            printf("Received: %s\n", buffer);
+            FD_ZERO(&read_fds);
+            FD_SET(server_socket, &read_fds);
+            max_sd = server_socket;
 
-            if (strlen(buffer) == 0) {
-                break;
+            for (int i = 0; i < MAX_CLIENTS; i++) {
+                int sd = client_sockets[i];
+
+                if (sd > 0) {
+                    FD_SET(sd, &read_fds);
+                }
+
+                if (sd > max_sd) {
+                    max_sd = sd;
+                }
+            }
+
+            activity = select(max_sd + 1, &read_fds, NULL, NULL, NULL);
+
+            if ((activity < 0)) {
+                perror("Select error");
+            }
+
+            if (FD_ISSET(server_socket, &read_fds)) {
+                int client_socket = accept_client(server_socket);
+
+                for (int i = 0; i < MAX_CLIENTS; i++) {
+                    if (client_sockets[i] == 0) {
+                        client_sockets[i] = client_socket;
+                        break;
+                    }
+                }
+            }
+
+            for (int i = 0; i < MAX_CLIENTS; i++) {
+                int sd = client_sockets[i];
+
+                if (FD_ISSET(sd, &read_fds)) {
+                    char buffer[MAX_BUFFER_SIZE];
+                    receive_data(sd, buffer);
+
+                    printf("%d: %s\n", sd, buffer);
+
+                    if (strlen(buffer) == 0) {
+                        close_socket(sd);
+                        client_sockets[i] = 0;
+                    }
+                }
             }
         }
 
         cleanup_server(server_socket);
-        cleanup_client(client_socket);
     } else {
         fprintf(stderr, "Invalid type. Use 1 for sending or 2 for listening.\n");
         exit(EXIT_FAILURE);
