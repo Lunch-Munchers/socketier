@@ -1,5 +1,5 @@
 
-<a href="https://imgbb.com/"><img src="https://i.ibb.co/XpqJmkj/bootybaby.png" alt="bootybaby" border="0"></a><br /><aimage</a><br />
+<a href="https://imgbb.com/"><img src="https://i.ibb.co/XpqJmkj/bootybaby.png" alt="bootybaby" border="0"></a><br />
 
 # Simple Socket Program in C
 
