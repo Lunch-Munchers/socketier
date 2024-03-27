@@ -31,5 +31,6 @@ Listening for Messages:
 
 # Disclamer
 
-This code is intended for educational purposes and may require further enhancements for production use. Use at your own discretion.
+This program is intended to be used only for shits and giggles, if you have any suggestions/tips i would greatly appreaciate it,
+dm _seasponge on discord for any inquiries 
 
