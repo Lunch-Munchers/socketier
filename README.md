@@ -1,5 +1,4 @@
 
-<a href="https://imgbb.com/"><img src="https://i.ibb.co/XpqJmkj/bootybaby.png" alt="bootybaby" border="0"></a><br />
 
 # Installation
 Clone the repo:
